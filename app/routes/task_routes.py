@@ -43,16 +43,25 @@ def create_task():
 # GET all tasks
 @tasks_bp.get("")
 def get_all_tasks():
-    tasks = Task.query.all()
-    tasks_response = []
-    
-    for task in tasks:
-        tasks_response.append({
-            "id":task.id,
-            "title": task.title,
-            "description": task.description,
-            "is_complete": task.completed_at is not None
-        })
+    # Start the base query without resetting it
+    query = db.select(Task)
+    sort_order = request.args.get("sort", "asc")
+    if sort_order == "desc":
+        query = query.order_by(Task.title.desc())
+    else:
+        query = query.order_by(Task.title.asc())
+
+    # Execute the query
+    tasks = db.session.scalars(query)
+
+    # Build the response
+    tasks_response = [{
+        "id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "is_complete": task.completed_at is not None
+    } for task in tasks]
+
     return jsonify(tasks_response), 200
 
 # GET one task
