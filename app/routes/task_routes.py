@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, make_response, abort
 from app.models.task import Task
 from ..db import db
+from datetime import datetime
 
 tasks_bp = Blueprint("tasks_bp", __name__, url_prefix="/tasks")
 
@@ -96,6 +97,45 @@ def update_task(task_id):
     task.title = request_body.get("title", task.title)
     task.description = request_body.get("description", task.description)
 
+    db.session.commit()
+
+    return {
+        "task": {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "is_complete": task.completed_at is not None
+        }
+    }, 200
+
+# PATCH: Partial update tasks
+@tasks_bp.patch("/<task_id>/mark_complete")
+def mark_task_complete(task_id):
+    task = db.session.get(Task, task_id)
+
+    if task is None:
+        abort(make_response({"message": f"Task {task_id} not found"}, 404))
+
+    task.completed_at = datetime.now().date()
+    db.session.commit()
+
+    return {
+        "task": {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "is_complete": task.completed_at is not None
+        }
+    }, 200
+
+@tasks_bp.patch("/<task_id>/mark_incomplete")
+def mark_task_incomplete(task_id):
+    task = db.session.get(Task, task_id)
+
+    if task is None:
+        abort(make_response({"message": f"Task {task_id} not found"}, 404))
+
+    task.completed_at = None
     db.session.commit()
 
     return {
