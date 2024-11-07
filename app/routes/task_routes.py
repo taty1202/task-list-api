@@ -118,6 +118,7 @@ def mark_task_complete(task_id):
     if task is None:
         abort(make_response({"message": f"Task {task_id} not found"}, 404))
 
+    # task.title = request.json.get("title", task.title)
     task.completed_at = datetime.now().date()
     db.session.commit()
 
