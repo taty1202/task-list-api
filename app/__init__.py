@@ -24,3 +24,5 @@ def create_app(config=None):
     app.register_blueprint(goals_bp)
 
     return app
+
+

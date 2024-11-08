@@ -1,5 +1,6 @@
 from flask import Blueprint, request, make_response, abort, Response
 from app.models.goal import Goal
+from app.models.task import Task
 from ..db import db
 
 goals_bp = Blueprint("goals_bp", __name__, url_prefix="/goals")
@@ -30,6 +31,23 @@ def create_goal():
     response = {"goal" : new_goal.goal_dict()}
     return response, 201
 
+@goals_bp.post("/<goal_id>/tasks")
+def associated_tasks_with_goal(goal_id):
+    goal = validate_goal(goal_id)
+    request_body = request.get_json()
+
+    if "task_ids" not in request_body:
+        return {"details": "Invalid data"}, 400
+    
+    task_ids = request_body["task_ids"]
+    for task_id in task_ids:
+        task = Task.query.get(task_id)
+        if task:
+            task.goal_id = goal.id
+
+    db.session.commit()
+    return {"id": goal.id, "task_ids": task_ids}, 200
+
 @goals_bp.get("")
 def get_all_goals():
     goals = Goal.query.all()
@@ -42,6 +60,23 @@ def get_one_goal(goal_id):
     goal = validate_goal(goal_id)
 
     return {"goal": goal.goal_dict()}, 200
+
+@goals_bp.get("/<goal_id>/tasks")
+def get_tasks_for_goal(goal_id):
+    goal = validate_goal(goal_id)
+    tasks_response = [{
+        "id": task.id,
+        "goal_id": goal.id,
+        "title": task.title,
+        "description": task.description,
+        "is_complete": task.completed_at is not None
+    } for task in goal.tasks]
+
+    return {
+        "id": goal.id,
+        "title": goal.title,
+        "tasks": tasks_response
+    }, 200
 
 @goals_bp.put("/<goal_id>")
 def update_goal(goal_id):

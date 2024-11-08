@@ -70,15 +70,10 @@ def get_all_tasks():
 # GET one task
 @tasks_bp.get("/<task_id>")
 def get_one_task(task_id):
-    task = validate_task(task_id)  # Call validate_task
+    task = validate_task(task_id) 
 
     return {
-        "task": {
-            "id": task.id,
-            "title": task.title,
-            "description": task.description,
-            "is_complete": task.completed_at is not None
-        }
+        "task": task.task_dict()
     }, 200
 
 
@@ -165,4 +160,4 @@ def delete_task(task_id):
     }, 200)
     
 
-        
+    

@@ -64,6 +64,7 @@ def test_get_goal_not_found(client):
 def test_create_goal(client):
     # Act
     response = client.post("/goals", json={
+        "id": 1,
         "title": "My New Goal"
     })
     response_body = response.get_json()
@@ -77,7 +78,6 @@ def test_create_goal(client):
             "title": "My New Goal"
         }
     }
-
 
 # @pytest.mark.skip(reason="test to be completed by student")
 def test_update_goal(client, one_goal):
