@@ -13,10 +13,14 @@ class Task(db.Model):
     goal: Mapped["Goal"] = relationship("Goal", back_populates="tasks")
 
     def task_dict(self):
-        return dict(
-            id=self.id,
-            title=self.title,
-            description=self.description,
-            is_complete=self.completed_at is not None, 
-            goal_id=self.goal_id
-    )
+        task_data = {
+            "id": self.id, 
+            "title": self.title,
+            "description": self.description,
+            "is_complete": self.completed_at is not None
+        }
+
+        if self.goal_id is not None:
+            task_data["goal_id"] = self.goal_id
+        return task_data
+        
